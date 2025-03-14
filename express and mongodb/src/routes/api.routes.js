@@ -15,6 +15,10 @@ apiRouter.route("/").get((req, res) => {
     })
 })
 
+/**
+ * @route /auth
+ * @desc user authentication route
+ */
 apiRouter.use("/auth", authRouter)
 
 module.exports = apiRouter
