@@ -1,4 +1,5 @@
 const { Router } = require("express")
+const authRouter = require("./auth.routes")
 
 const apiRouter = Router()
 
@@ -13,5 +14,7 @@ apiRouter.route("/").get((req, res) => {
         message: "Welcome to the app!",
     })
 })
+
+apiRouter.use("/auth", authRouter)
 
 module.exports = apiRouter
