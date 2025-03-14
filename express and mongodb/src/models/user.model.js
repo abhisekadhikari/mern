@@ -1,6 +1,8 @@
 const mongoose = require("mongoose")
-const AppError = require("../utils/AppError")
 const bcrypt = require("bcryptjs")
+const jwt = require("jsonwebtoken")
+const AppError = require("../utils/AppError")
+const envConfig = require("../config/env.config")
 
 const userSchema = new mongoose.Schema(
     {
@@ -46,10 +48,26 @@ userSchema.pre("save", async function (next) {
     }
 })
 
-userSchema.methods.comparePassword = async function () {
+userSchema.methods.comparePassword = async function (password) {
     const isValid = await bcrypt.compare(password, this.password)
 
     return isValid
+}
+
+userSchema.methods.signJwtToken = function () {
+    const token = jwt.sign(
+        {
+            email: this.email,
+            _id: this._id,
+        },
+        envConfig.JWT_SECRET,
+        {
+            issuer: "Udemy",
+            expiresIn: "3h",
+        }
+    )
+
+    return token
 }
 
 const User = mongoose.model("user", userSchema)

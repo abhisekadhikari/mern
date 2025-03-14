@@ -1,5 +1,7 @@
 const { Router } = require("express")
 const authRouter = require("./auth.routes")
+const profileRouter = require("./profile.routes")
+const checkAuth = require("../middlewares/checkAuth.middleware")
 
 const apiRouter = Router()
 
@@ -20,5 +22,7 @@ apiRouter.route("/").get((req, res) => {
  * @desc user authentication route
  */
 apiRouter.use("/auth", authRouter)
+
+apiRouter.use("/user", checkAuth, profileRouter)
 
 module.exports = apiRouter
