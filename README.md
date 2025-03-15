@@ -1,128 +1,192 @@
-# DevConnector 🚀
+# **DevConnector** 💻🔗
 
-A **social platform** for developers to connect, share experiences, and collaborate on projects. Built with **Node.js, Express, MongoDB, and JWT authentication**. 🛠️
+## **A Social Media API for Developers** 🌍✨
 
-## Features ✨
-
--   👤 **User Authentication** (Signup/Login with JWT)
--   📝 **User Profile Management**
--   💼 **Experience & Education Tracking**
--   🔐 **Secure API Routes with Middleware**
--   🌐 **MongoDB Integration with Mongoose**
+DevConnector is a **Node.js** and **Express** backend for a social media platform where developers can **connect, post, like, and comment** on each other's updates. The API includes **JWT-based authentication, profile management, post interactions, and validation using Express Validator**.
 
 ---
 
-## 🏗️ Installation & Setup
+## **✨ Features**
 
-### 1️⃣ Clone the Repository 📥
+✅ User Authentication & Authorization (JWT) 🔐  
+✅ Create, Update, and Delete Profiles 👨‍💻  
+✅ CRUD Operations on Posts 📝  
+✅ Like & Unlike Posts 👍👎  
+✅ Comment on Posts 💬  
+✅ Validation & Error Handling ⚠️  
+✅ Secure API Routes with Middleware 🛡️
 
-```bash
-git clone https://github.com/yourusername/devconnector.git
+---
+
+## **📂 Project Structure**
+
+```
+📂 devconnector
+ ┣ 📂 config
+ ┃ ┗ 📄 env.config.js
+ ┣ 📂 controllers
+ ┃ ┣ 📄 auth.controller.js
+ ┃ ┣ 📄 profile.controller.js
+ ┃ ┗ 📄 post.controller.js
+ ┣ 📂 middlewares
+ ┃ ┣ 📄 checkAuth.middleware.js
+ ┃ ┗ 📄 asyncErrorHandler.js
+ ┣ 📂 models
+ ┃ ┣ 📄 user.model.js
+ ┃ ┣ 📄 profile.model.js
+ ┃ ┗ 📄 post.model.js
+ ┣ 📂 routes
+ ┃ ┣ 📄 auth.routes.js
+ ┃ ┣ 📄 profile.routes.js
+ ┃ ┗ 📄 post.routes.js
+ ┣ 📂 validators
+ ┃ ┗ 📄 post.validator.js
+ ┣ 📄 server.js
+ ┗ 📄 README.md
+```
+
+---
+
+## **🛠️ Installation & Setup**
+
+### **1️⃣ Clone the Repository**
+
+```sh
+git clone https://github.com/your-username/devconnector.git
 cd devconnector
 ```
 
-### 2️⃣ Install Dependencies 📦
+### **2️⃣ Install Dependencies**
 
-```bash
+```sh
 npm install
 ```
 
-### 3️⃣ Set Up Environment Variables ⚙️
+### **3️⃣ Set Up Environment Variables**
 
-Create a `.env` or `.env.dev` file in the root directory and add:
+Create a **.env** file in the root directory and add:
 
-```env
-MONGO_URI=your_mongodb_uri
-JWT_SECRET=your_jwt_secret
-NODE_ENV=dev
+```sh
 PORT=5000
+MONGO_URI=your_mongodb_connection_string
+JWT_SECRET=your_jwt_secret
 ```
 
-### 4️⃣ Run the Server 🚀
+### **4️⃣ Start the Server**
 
-```bash
-npm start  # Production mode
-npm run dev  # Development mode (nodemon)
+```sh
+npm run dev
 ```
 
-Server will start at **`http://localhost:5000`**
+The server will start on **http://localhost:5000** 🚀
 
 ---
 
-## 🔗 API Endpoints
+## **🔗 API Routes**
 
-### 🛠️ **Auth Routes** (`/api/auth`)
+### 🔒 **Authentication**
 
-| Method | Route     | Description          | Access |
-| ------ | --------- | -------------------- | ------ |
-| POST   | `/signup` | Register new user ✍️ | Public |
-| POST   | `/login`  | Authenticate user 🔑 | Public |
+| Method | Route            | Description     | Access |
+| ------ | ---------------- | --------------- | ------ |
+| POST   | `/auth/register` | Register a user | Public |
+| POST   | `/auth/login`    | Login & get JWT | Public |
 
-### 👤 **Profile Routes** (`/api/profile`)
+### 👤 **User Profiles**
 
-| Method | Route                     | Description            | Access  |
-| ------ | ------------------------- | ---------------------- | ------- |
-| POST   | `/profile`                | Create user profile ✨ | Private |
-| GET    | `/profile`                | Get user profile 📄    | Private |
-| PATCH  | `/profile/experience`     | Add experience 💼      | Private |
-| DELETE | `/profile/experience/:id` | Remove experience ❌   | Private |
+| Method | Route      | Description                | Access  |
+| ------ | ---------- | -------------------------- | ------- |
+| GET    | `/user/me` | Get logged-in user profile | Private |
+| PUT    | `/user/me` | Update user profile        | Private |
+
+### 📝 **Posts**
+
+| Method | Route       | Description      | Access  |
+| ------ | ----------- | ---------------- | ------- |
+| POST   | `/post`     | Create a post 🔀 | Private |
+| GET    | `/post`     | Get all posts 📜 | Public  |
+| PUT    | `/post/:id` | Update a post ✏️ | Private |
+| DELETE | `/post/:id` | Delete a post ❌ | Private |
+
+### 👍 **Post Likes**
+
+| Method | Route            | Description             | Access  |
+| ------ | ---------------- | ----------------------- | ------- |
+| PUT    | `/post/:id/like` | Like/Unlike a post 👍👎 | Private |
+
+### 💬 **Post Comments**
+
+| Method | Route                          | Description         | Access  |
+| ------ | ------------------------------ | ------------------- | ------- |
+| POST   | `/post/:id/comment`            | Add a comment 💬    | Private |
+| DELETE | `/post/:id/comment/:commentId` | Delete a comment ❌ | Private |
 
 ---
 
-## 🗄️ Database Models (MongoDB)
+## **🛡️ Middleware**
 
-### **User Model** 👤
+-   **`checkAuth`** → Protects private routes by verifying JWT.
+-   **`postValidator`** → Ensures valid post data before saving.
+-   **`asyncErrorHandler`** → Catches async errors to avoid crashes.
 
-```js
-{
-  name: String,
-  email: String,
-  password: String (hashed),
-  avatar: String (Gravatar URL),
-  timestamps: true
-}
+---
+
+## **📋 Example API Request**
+
+### **🔒 Register User**
+
+```sh
+curl -X POST http://localhost:5000/auth/register \
+-H "Content-Type: application/json" \
+-d '{
+    "name": "John Doe",
+    "email": "john@example.com",
+    "password": "password123"
+}'
 ```
 
-### **Profile Model** 📄
+### **📝 Create a Post**
 
-```js
-{
-  user_id: ObjectId,
-  status: String,
-  skills: [String],
-  bio: String,
-  experience: [{ title, company, from, to, current }],
-  education: [{ school, degree, fieldofstudy, from, to, current }],
-  timestamps: true
-}
+```sh
+curl -X POST http://localhost:5000/post \
+-H "Content-Type: application/json" \
+-H "Authorization: Bearer YOUR_JWT_TOKEN" \
+-d '{
+    "text": "This is my first post!",
+    "name": "John Doe",
+    "avatar": "https://example.com/avatar.jpg"
+}'
+```
+
+### **👍 Like a Post**
+
+```sh
+curl -X PUT http://localhost:5000/post/POST_ID/like \
+-H "Authorization: Bearer YOUR_JWT_TOKEN"
+```
+
+### **💬 Add a Comment**
+
+```sh
+curl -X POST http://localhost:5000/post/POST_ID/comment \
+-H "Content-Type: application/json" \
+-H "Authorization: Bearer YOUR_JWT_TOKEN" \
+-d '{
+    "text": "This is my comment!"
+}'
 ```
 
 ---
 
-## 🔒 Authentication & Security
+## **📜 License**
 
--   **JWT Authentication** for secure user sessions 🔑
--   **Bcrypt.js** for password hashing 🔐
--   **Custom Error Handling** using middleware ⚠️
+This project is licensed under the **MIT License**.
 
 ---
 
-## 🛠️ Future Enhancements
+## **🚀 Contributing**
 
--   📢 **Posts & Comments** (Developer discussions)
--   📍 **Location-based Developer Search**
--   📬 **Messaging System** (Chat between developers)
+Want to improve DevConnector? Feel free to submit a **pull request** or report **issues**! 🎯
 
 ---
-
-## 🤝 Contributing
-
-PRs are welcome! Feel free to fork the repo and submit changes. 🚀
-
----
-
-## 📝 License
-
-This project is **open-source** and available under the **MIT License**. 📝
 
 **Made with ❤️ by [Abhisek](https://github.com/abhisekadhikari)!**
