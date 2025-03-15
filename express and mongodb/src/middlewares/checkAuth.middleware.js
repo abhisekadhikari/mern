@@ -2,9 +2,17 @@ const jwt = require("jsonwebtoken")
 const AppError = require("../utils/AppError")
 const envConfig = require("../config/env.config")
 
+/**
+ * @middleware checkAuth
+ * @desc Middleware to authenticate requests using JWT
+ * @access Protected (Requires a valid token)
+ */
 const checkAuth = (req, res, next) => {
     try {
+        // Extract Authorization header
         const authHeader = req.headers?.authorization
+
+        // Validate Authorization header format
         if (!authHeader || !authHeader.startsWith("Bearer ")) {
             throw new AppError(
                 403,
@@ -13,15 +21,18 @@ const checkAuth = (req, res, next) => {
             )
         }
 
+        // Extract the JWT token from the header
         const token = authHeader.split(" ")[1]
 
+        // Verify JWT token
         const user = jwt.verify(token, envConfig.JWT_SECRET)
         if (!user) {
             throw new AppError(403, "Unauthorized", "Invalid token.")
         }
 
-        req.user = user // Attach user data to the request for further use
-        next()
+        // Attach user data to the request object for further use
+        req.user = user
+        next() // Proceed to the next middleware/controller
     } catch (error) {
         // Handle specific JWT errors
         if (error.name === "JsonWebTokenError") {
@@ -36,6 +47,7 @@ const checkAuth = (req, res, next) => {
             )
         }
 
+        // Generic error handling
         return next(
             new AppError(
                 500,
