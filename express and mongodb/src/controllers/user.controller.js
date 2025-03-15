@@ -4,6 +4,11 @@ const AppError = require("../utils/AppError")
 const User = require("../models/user.model")
 const Profile = require("../models/profile.model")
 
+/**
+ * @route   POST /api/auth/signup
+ * @desc    Register a new user
+ * @access  Public
+ */
 const signupUser = asyncErrorHandler(async (req, res) => {
     const error = validationResult(req).formatWith(({ msg }) => msg)
 
@@ -33,6 +38,11 @@ const signupUser = asyncErrorHandler(async (req, res) => {
     })
 })
 
+/**
+ * @route   POST /api/auth/login
+ * @desc    Authenticate user and return JWT token
+ * @access  Public
+ */
 const loginUser = asyncErrorHandler(async (req, res) => {
     const error = validationResult(req).formatWith(({ msg }) => msg)
 
@@ -69,11 +79,16 @@ const loginUser = asyncErrorHandler(async (req, res) => {
 
     res.status(200).json({
         success: true,
-        message: "login successful",
+        message: "Login successful",
         token: jwtSignedToken,
     })
 })
 
+/**
+ * @route   POST /api/profile
+ * @desc    Create or update user profile
+ * @access  Private
+ */
 const createUserProfile = asyncErrorHandler(async (req, res) => {
     const error = validationResult(req).formatWith(({ msg }) => msg)
 
@@ -93,11 +108,16 @@ const createUserProfile = asyncErrorHandler(async (req, res) => {
 
     res.status(201).json({
         success: true,
-        message: "user profile created",
+        message: "User profile created",
         data: userProfile,
     })
 })
 
+/**
+ * @route   GET /api/profile
+ * @desc    Get user profile along with user details
+ * @access  Private
+ */
 const getUserProfile = asyncErrorHandler(async (req, res) => {
     const userProfile = await Profile.aggregate([
         {
@@ -112,11 +132,16 @@ const getUserProfile = asyncErrorHandler(async (req, res) => {
 
     return res.status(200).json({
         success: true,
-        message: "user profile",
+        message: "User profile retrieved successfully",
         data: userProfile,
     })
 })
 
+/**
+ * @route   PATCH /api/profile/experience
+ * @desc    Add new experience to user profile
+ * @access  Private
+ */
 const updateUserExperience = asyncErrorHandler(async (req, res) => {
     const error = validationResult(req).formatWith(({ msg }) => msg)
 
@@ -137,8 +162,38 @@ const updateUserExperience = asyncErrorHandler(async (req, res) => {
 
     res.status(200).json({
         success: true,
-        message: "user experience updated",
+        message: "User experience updated successfully",
         data: newExp,
+    })
+})
+
+/**
+ * @route   DELETE /api/profile/experience/:exp_id
+ * @desc    Remove an experience entry from user profile
+ * @access  Private
+ */
+const removeUserExperience = asyncErrorHandler(async (req, res) => {
+    const { exp_id } = req.params // Get experience ID from request params
+
+    // Find profile by user ID
+    const profile = await Profile.findOne({ user_id: req.user._id })
+
+    if (!profile) {
+        throw new AppError(404, "Profile not found.")
+    }
+
+    // Filter out the experience with the given exp_id
+    profile.experience = profile.experience.filter(
+        (exp) => exp._id.toString() !== exp_id
+    )
+
+    // Save the updated profile
+    await profile.save()
+
+    res.json({
+        success: true,
+        message: "Experience removed successfully.",
+        data: profile,
     })
 })
 
@@ -148,4 +203,5 @@ module.exports = {
     getUserProfile,
     createUserProfile,
     updateUserExperience,
+    removeUserExperience,
 }
