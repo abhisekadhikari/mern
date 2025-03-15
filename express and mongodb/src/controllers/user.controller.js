@@ -2,6 +2,7 @@ const { validationResult, matchedData } = require("express-validator")
 const asyncErrorHandler = require("../utils/asyncErrorHandler")
 const AppError = require("../utils/AppError")
 const User = require("../models/user.model")
+const Profile = require("../models/profile.model")
 
 const signupUser = asyncErrorHandler(async (req, res) => {
     const error = validationResult(req).formatWith(({ msg }) => msg)
@@ -73,8 +74,41 @@ const loginUser = asyncErrorHandler(async (req, res) => {
     })
 })
 
-const userProfile = asyncErrorHandler(async (req, res) => {
-    const userProfile = await User.findById(req.user._id)
+const createUserProfile = asyncErrorHandler(async (req, res) => {
+    const error = validationResult(req).formatWith(({ msg }) => msg)
+
+    if (!error.isEmpty())
+        throw new AppError(
+            400,
+            "Validation failed. Please fix the errors.",
+            error.mapped()
+        )
+
+    const data = matchedData(req)
+
+    const userProfile = await Profile.create({
+        user_id: req.user._id,
+        ...data,
+    })
+
+    res.status(201).json({
+        success: true,
+        message: "user profile created",
+        data: userProfile,
+    })
+})
+
+const getUserProfile = asyncErrorHandler(async (req, res) => {
+    const userProfile = await Profile.aggregate([
+        {
+            $lookup: {
+                from: "users",
+                localField: "user_id",
+                foreignField: "_id",
+                as: "user",
+            },
+        },
+    ])
 
     return res.status(200).json({
         success: true,
@@ -86,5 +120,6 @@ const userProfile = asyncErrorHandler(async (req, res) => {
 module.exports = {
     signupUser,
     loginUser,
-    userProfile,
+    getUserProfile,
+    createUserProfile,
 }
