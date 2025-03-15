@@ -21,6 +21,8 @@ const signupUser = asyncErrorHandler(async (req, res) => {
 
     const data = matchedData(req)
 
+    console.log(data)
+
     // Check if the user already exists
     const existingUser = await User.findOne({ email: data.email })
     if (existingUser) {

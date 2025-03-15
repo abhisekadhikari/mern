@@ -1,6 +1,9 @@
 **/node_modules
 **/NOTES.md
 
+package-lock.json
+package.json
+
 **/.env# Logs
 logs
 *.log
