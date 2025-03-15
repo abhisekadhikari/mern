@@ -117,9 +117,35 @@ const getUserProfile = asyncErrorHandler(async (req, res) => {
     })
 })
 
+const updateUserExperience = asyncErrorHandler(async (req, res) => {
+    const error = validationResult(req).formatWith(({ msg }) => msg)
+
+    if (!error.isEmpty())
+        throw new AppError(
+            400,
+            "Validation failed. Please fix the errors.",
+            error.mapped()
+        )
+
+    const data = matchedData(req)
+
+    const profile = await Profile.findOne({ user_id: req.user._id })
+
+    profile.experience.unshift(data)
+
+    const newExp = await profile.save()
+
+    res.status(200).json({
+        success: true,
+        message: "user experience updated",
+        data: newExp,
+    })
+})
+
 module.exports = {
     signupUser,
     loginUser,
     getUserProfile,
     createUserProfile,
+    updateUserExperience,
 }
