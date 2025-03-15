@@ -1,30 +1,33 @@
-// import packages
+// Import required packages
 const express = require("express")
 
-// import local packages
+// Import local modules
 const apiRouter = require("./routes/api.routes")
 const AppError = require("./utils/AppError")
 
-// init. express app
-
+// Initialize Express application
 const app = express()
 
-// middlewares
+// Middleware for parsing incoming JSON and URL-encoded data
 app.use(express.json())
 app.use(express.urlencoded({ extended: false }))
 
-// api routes
+// Mount API routes under "/api" prefix
 app.use("/api", apiRouter)
 
+// Global error handling middleware
 app.use((err, req, res, next) => {
-    console.log(err)
+    console.log(err) // Log the error for debugging
 
+    // Handle custom application errors
     if (err instanceof AppError)
         return res.status(err.statusCode).json({
             success: false,
             message: err.message,
             error: err.error,
         })
+
+    // Handle unexpected server errors
     res.status(500).json({
         success: false,
         error: "Internal Server Error",
