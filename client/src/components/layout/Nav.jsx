@@ -5,13 +5,13 @@ const Nav = () => {
     return (
         <nav className="navbar bg-dark">
             <h1>
-                <a href="index.html">
+                <a href="/">
                     <i className="fas fa-code"></i> DevConnector
                 </a>
             </h1>
             <ul>
                 <li>
-                    <a href="profiles.html">Developers</a>
+                    <a href="#">Developers</a>
                 </li>
                 <li>
                     <Link to="/signup">Register</Link>
