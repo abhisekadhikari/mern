@@ -7,3 +7,5 @@ const apiClient = axios.create({
 export const loginRequest = (data) => apiClient.post("/auth/login", data)
 
 export const signupRequest = (data) => apiClient.post("/auth/signup", data)
+
+export const userProfileRequest = () => apiClient.get("/user/profile")

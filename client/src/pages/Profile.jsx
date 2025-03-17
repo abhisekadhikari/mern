@@ -1,6 +1,11 @@
 import React from "react"
+import { useSelector } from "react-redux"
 
 const Profile = () => {
+    const userProfile = useSelector((state) => state.profile)
+
+    console.log(userProfile)
+
     return (
         <section className="container">
             <a href="profiles.html" className="btn btn-light">

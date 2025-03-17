@@ -3,6 +3,7 @@ const asyncErrorHandler = require("../utils/asyncErrorHandler")
 const AppError = require("../utils/AppError")
 const User = require("../models/user.model")
 const Profile = require("../models/profile.model")
+const mongoose = require("mongoose")
 
 /**
  * @route   POST /api/auth/signup
@@ -103,6 +104,18 @@ const createUserProfile = asyncErrorHandler(async (req, res) => {
 
     const data = matchedData(req)
 
+    const isUserAlreadyCreated = await Profile.findOne({
+        user_id: new mongoose.Types.ObjectId(req.user._id),
+    })
+
+    if (isUserAlreadyCreated) {
+        throw new AppError(
+            400,
+            "invalid request",
+            "user profile already exists."
+        )
+    }
+
     const userProfile = await Profile.create({
         user_id: req.user._id,
         ...data,
@@ -122,15 +135,33 @@ const createUserProfile = asyncErrorHandler(async (req, res) => {
  */
 const getUserProfile = asyncErrorHandler(async (req, res) => {
     const userProfile = await Profile.aggregate([
-        {
+        /* {
             $lookup: {
                 from: "users",
                 localField: "user_id",
                 foreignField: "_id",
                 as: "user",
             },
-        },
+        }, */
+
+        [
+            {
+                $match: {
+                    user_id: new mongoose.Types.ObjectId(req.user._id),
+                },
+            },
+            {
+                $lookup: {
+                    from: "users",
+                    localField: "user_id",
+                    foreignField: "_id",
+                    as: "user",
+                },
+            },
+        ],
     ])
+
+    console.log(userProfile)
 
     return res.status(200).json({
         success: true,

@@ -6,6 +6,7 @@ import { AxiosError } from "axios"
 import { toast } from "react-toastify"
 import { useDispatch } from "react-redux"
 import { loginUser } from "../features/authSlice"
+import { fetchUserProfile } from "../features/profileSlice"
 
 const Login = () => {
     const {
@@ -33,7 +34,7 @@ const Login = () => {
                 })
             )
 
-            localStorage.setItem("_userToken", response.data.token)
+            dispacher(fetchUserProfile())
 
             toast.success(response.data.message, {
                 position: "top-right",
