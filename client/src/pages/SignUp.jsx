@@ -4,6 +4,8 @@ import { Link } from "react-router-dom"
 import { signupRequest } from "../api/Api"
 import { toast } from "react-toastify"
 import "react-toastify/dist/ReactToastify.css"
+import { AxiosError } from "axios"
+import { useNavigate } from "react-router-dom"
 
 const SignUp = () => {
     const {
@@ -13,22 +15,14 @@ const SignUp = () => {
         formState: { errors },
     } = useForm()
 
+    const navigator = useNavigate()
+
     const onSubmit = async (data) => {
         try {
             console.log("User Data:", data)
             const response = await signupRequest(data)
 
-            if (!response.data.success) {
-                toast.error(response.data.message, {
-                    position: "top-right",
-                    autoClose: 5000, // Increased time for multiple errors
-                    hideProgressBar: false,
-                    closeOnClick: true,
-                    pauseOnHover: true,
-                    draggable: true,
-                    theme: "light",
-                })
-            }
+            console.log(response)
 
             // Success Toast
             toast.success("Signup successful!", {
@@ -40,17 +34,35 @@ const SignUp = () => {
                 draggable: true,
                 theme: "light",
             })
+
+            navigator("/login")
         } catch (error) {
-            // Error Toast (displays multiple errors properly)
-            toast.error(error.message, {
-                position: "top-right",
-                autoClose: 5000, // Increased time for multiple errors
-                hideProgressBar: false,
-                closeOnClick: true,
-                pauseOnHover: true,
-                draggable: true,
-                theme: "light",
-            })
+            if (error instanceof AxiosError) {
+                console.log(error.response.data?.error)
+
+                for (const err of Object.entries(error.response.data.error)) {
+                    console.log(err)
+                    toast.error(err[1], {
+                        position: "top-right",
+                        autoClose: 5000, // Increased time for multiple errors
+                        hideProgressBar: false,
+                        closeOnClick: true,
+                        pauseOnHover: true,
+                        draggable: true,
+                        theme: "light",
+                    })
+                }
+
+                /* toast.error(error.response.data.error, {
+                    position: "top-right",
+                    autoClose: 5000, // Increased time for multiple errors
+                    hideProgressBar: false,
+                    closeOnClick: true,
+                    pauseOnHover: true,
+                    draggable: true,
+                    theme: "light",
+                }) */
+            }
         }
     }
 

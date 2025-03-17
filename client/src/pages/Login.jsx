@@ -1,6 +1,11 @@
 import React from "react"
 import { useForm } from "react-hook-form"
-import { Link } from "react-router-dom"
+import { Link, useNavigate } from "react-router-dom"
+import { loginRequest } from "../api/Api"
+import { AxiosError } from "axios"
+import { toast } from "react-toastify"
+import { useDispatch } from "react-redux"
+import { loginUser } from "../features/authSlice"
 
 const Login = () => {
     const {
@@ -9,9 +14,62 @@ const Login = () => {
         formState: { errors },
     } = useForm()
 
-    const onSubmit = (data) => {
-        console.log("Login Data:", data)
-        // Add authentication logic here (e.g., API call)
+    const navigator = useNavigate()
+
+    const dispacher = useDispatch()
+
+    const onSubmit = async (data) => {
+        try {
+            console.log("Login Data:", data)
+
+            const response = await loginRequest(data)
+
+            console.log(response.data)
+
+            dispacher(
+                loginUser({
+                    token: response.data.token,
+                    isAuthenticated: true,
+                })
+            )
+
+            localStorage.setItem("_userToken", response.data.token)
+
+            toast.success(response.data.message, {
+                position: "top-right",
+                autoClose: 1000, // Increased time for multiple errors
+                hideProgressBar: false,
+                closeOnClick: true,
+                pauseOnHover: true,
+                draggable: true,
+                theme: "light",
+                onClose: () => {
+                    navigator("/dashboard")
+                },
+            })
+        } catch (error) {
+            if (error instanceof AxiosError) {
+                return toast.error(error.response.data.error, {
+                    position: "top-right",
+                    autoClose: 5000, // Increased time for multiple errors
+                    hideProgressBar: false,
+                    closeOnClick: true,
+                    pauseOnHover: true,
+                    draggable: true,
+                    theme: "light",
+                })
+            }
+
+            toast.error(error.message, {
+                position: "top-right",
+                autoClose: 5000, // Increased time for multiple errors
+                hideProgressBar: false,
+                closeOnClick: true,
+                pauseOnHover: true,
+                draggable: true,
+                theme: "light",
+            })
+        }
     }
 
     return (
