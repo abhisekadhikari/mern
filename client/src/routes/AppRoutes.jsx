@@ -9,6 +9,7 @@ import Profile from "../pages/Profile"
 import Posts from "../pages/Posts"
 import Profiles from "../pages/Profiles"
 import ProtectRoutes from "./ProtectRoutes"
+import CreateProfile from "../pages/CreateProfile"
 
 const AppRoutes = () => {
     return (
@@ -29,6 +30,7 @@ const AppRoutes = () => {
                 <Route path="/dashboard" element={<Dashboard />} />
                 <Route path="/profile" element={<Profile />} />
                 <Route path="/profiles" element={<Profiles />} />
+                <Route path="/create-profile" element={<CreateProfile />} />
                 <Route path="/posts" element={<Posts />} />
             </Route>
         </Routes>

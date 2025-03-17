@@ -1,6 +1,17 @@
 import React from "react"
+import { useForm } from "react-hook-form"
 
 const CreateProfile = () => {
+    const {
+        register,
+        handleSubmit,
+        formState: { errors },
+    } = useForm()
+
+    const onSubmit = (data) => {
+        console.log(data)
+    }
+
     return (
         <section className="container">
             <h1 className="large text-primary">Create Your Profile</h1>
@@ -9,10 +20,10 @@ const CreateProfile = () => {
                 make your profile stand out
             </p>
             <small>* = required field</small>
-            <form className="form">
+            <form className="form" onSubmit={handleSubmit(onSubmit)}>
                 <div className="form-group">
-                    <select name="status">
-                        <option value="0">* Select Professional Status</option>
+                    <select {...register("status", { required: true })}>
+                        <option value="">* Select Professional Status</option>
                         <option value="Developer">Developer</option>
                         <option value="Junior Developer">
                             Junior Developer
@@ -30,111 +41,92 @@ const CreateProfile = () => {
                         <option value="Intern">Intern</option>
                         <option value="Other">Other</option>
                     </select>
-                    <small className="form-text">
-                        Give us an idea of where you are at in your career
-                    </small>
+                    {errors.status && (
+                        <span className="error">Status is required</span>
+                    )}
                 </div>
-                <div className="form-group">
-                    <input type="text" placeholder="Company" name="company" />
-                    <small className="form-text">
-                        Could be your own company or one you work for
-                    </small>
-                </div>
-                <div className="form-group">
-                    <input type="text" placeholder="Website" name="website" />
-                    <small className="form-text">
-                        Could be your own or a company website
-                    </small>
-                </div>
-                <div className="form-group">
-                    <input type="text" placeholder="Location" name="location" />
-                    <small className="form-text">
-                        City & state suggested (eg. Boston, MA)
-                    </small>
-                </div>
-                <div className="form-group">
-                    <input type="text" placeholder="* Skills" name="skills" />
-                    <small className="form-text">
-                        Please use comma separated values (eg.
-                        HTML,CSS,JavaScript,PHP)
-                    </small>
-                </div>
+
                 <div className="form-group">
                     <input
                         type="text"
-                        placeholder="Github Username"
-                        name="githubusername"
+                        placeholder="* Skills"
+                        {...register("skills", { required: true })}
                     />
-                    <small className="form-text">
-                        If you want your latest repos and a Github link, include
-                        your username
-                    </small>
+                    {errors.skills && (
+                        <span className="error">Skills are required</span>
+                    )}
                 </div>
+
                 <div className="form-group">
                     <textarea
                         placeholder="A short bio of yourself"
-                        name="bio"
-                    ></textarea>
-                    <small className="form-text">
-                        Tell us a little about yourself
-                    </small>
-                </div>
-
-                <div className="my-2">
-                    <button type="button" className="btn btn-light">
-                        Add Social Network Links
-                    </button>
-                    <span>Optional</span>
-                </div>
-
-                <div className="form-group social-input">
-                    <i className="fab fa-twitter fa-2x"></i>
-                    <input
-                        type="text"
-                        placeholder="Twitter URL"
-                        name="twitter"
+                        {...register("bio")}
                     />
                 </div>
 
-                <div className="form-group social-input">
-                    <i className="fab fa-facebook fa-2x"></i>
+                <h2>Experience</h2>
+                <div className="form-group">
                     <input
                         type="text"
-                        placeholder="Facebook URL"
-                        name="facebook"
+                        placeholder="Title"
+                        {...register("experience.title", { required: true })}
                     />
+                    <input
+                        type="text"
+                        placeholder="Company"
+                        {...register("experience.company", { required: true })}
+                    />
+                    <input
+                        type="date"
+                        placeholder="From"
+                        {...register("experience.from", { required: true })}
+                    />
+                    <input
+                        type="date"
+                        placeholder="To"
+                        {...register("experience.to")}
+                    />
+                    <input
+                        type="checkbox"
+                        {...register("experience.current")}
+                    />{" "}
+                    Currently Working
                 </div>
 
-                <div className="form-group social-input">
-                    <i className="fab fa-youtube fa-2x"></i>
+                <h2>Education</h2>
+                <div className="form-group">
                     <input
                         type="text"
-                        placeholder="YouTube URL"
-                        name="youtube"
+                        placeholder="School"
+                        {...register("education.school", { required: true })}
                     />
+                    <input
+                        type="text"
+                        placeholder="Degree"
+                        {...register("education.degree", { required: true })}
+                    />
+                    <input
+                        type="text"
+                        placeholder="Field of Study"
+                        {...register("education.fieldofstudy", {
+                            required: true,
+                        })}
+                    />
+                    <input
+                        type="date"
+                        placeholder="From"
+                        {...register("education.from", { required: true })}
+                    />
+                    <input
+                        type="date"
+                        placeholder="To"
+                        {...register("education.to")}
+                    />
+                    <input type="checkbox" {...register("education.current")} />{" "}
+                    Currently Studying
                 </div>
 
-                <div className="form-group social-input">
-                    <i className="fab fa-linkedin fa-2x"></i>
-                    <input
-                        type="text"
-                        placeholder="Linkedin URL"
-                        name="linkedin"
-                    />
-                </div>
-
-                <div className="form-group social-input">
-                    <i className="fab fa-instagram fa-2x"></i>
-                    <input
-                        type="text"
-                        placeholder="Instagram URL"
-                        name="instagram"
-                    />
-                </div>
                 <input type="submit" className="btn btn-primary my-1" />
-                <a className="btn btn-light my-1" href="dashboard.html">
-                    Go Back
-                </a>
             </form>
         </section>
     )
