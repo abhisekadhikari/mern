@@ -3,12 +3,16 @@ import { useDispatch, useSelector } from "react-redux"
 import { fetchUserProfile } from "../features/profileSlice"
 import { Link } from "react-router-dom"
 import moment from "moment"
+import axios from "axios"
 
 const Dashboard = () => {
     const dispatch = useDispatch()
     const { userProfile, isLoading, error } = useSelector(
         (state) => state.profile
     )
+    const { token } = useSelector((state) => state.auth)
+
+    console.log(token)
 
     useEffect(() => {
         dispatch(fetchUserProfile())
@@ -21,6 +25,19 @@ const Dashboard = () => {
 
     const profile = userProfile.data[0] // Extract first profile object
     const user = profile.user?.[0]
+
+    const handleDelete = async (id) => {
+        const response = await axios.delete(
+            `/api/user/profile/experience/${id}`,
+            {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            }
+        )
+        console.log(response.data)
+        dispatch(fetchUserProfile()) // Refetch the profile after deletion
+    }
 
     return (
         <section className="container">
@@ -75,7 +92,10 @@ const Dashboard = () => {
                                         : moment(exp.to).format("YYYY-MM-DD")}
                                 </td>
                                 <td>
-                                    <button className="btn btn-danger">
+                                    <button
+                                        className="btn btn-danger"
+                                        onClick={() => handleDelete(exp._id)}
+                                    >
                                         Delete
                                     </button>
                                 </td>
