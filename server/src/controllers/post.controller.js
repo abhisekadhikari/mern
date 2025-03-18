@@ -20,7 +20,10 @@ const createPost = asyncErrorHandler(async (req, res) => {
 
     const data = matchedData(req)
 
-    const newPost = await Post.create(data)
+    const newPost = await Post.create({
+        user: req.user._id,
+        ...data,
+    })
 
     res.status(201).json({
         success: true,

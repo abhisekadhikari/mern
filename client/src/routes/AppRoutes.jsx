@@ -12,6 +12,7 @@ import ProtectRoutes from "./ProtectRoutes"
 import CreateProfile from "../pages/CreateProfile"
 import AddExperience from "../pages/AddExperience"
 import AddEducation from "../pages/AddEducation"
+import Post from "../pages/Post"
 
 const AppRoutes = () => {
     return (
@@ -33,6 +34,7 @@ const AppRoutes = () => {
                 <Route path="/profile" element={<Profile />} />
                 <Route path="/profiles" element={<Profiles />} />
                 <Route path="/create-profile" element={<CreateProfile />} />
+                <Route path="/post" element={<Post />} />
                 <Route path="/posts" element={<Posts />} />
                 <Route path="/add-experience" element={<AddExperience />} />
                 <Route path="/add-education" element={<AddEducation />} />

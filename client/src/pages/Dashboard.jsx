@@ -1,12 +1,14 @@
 import React, { useEffect } from "react"
 import { useDispatch, useSelector } from "react-redux"
 import { fetchUserProfile } from "../features/profileSlice"
-import { Link } from "react-router-dom"
+import { Link, useNavigate } from "react-router-dom"
 import moment from "moment"
 import axios from "axios"
+import { toast } from "react-toastify"
 
 const Dashboard = () => {
     const dispatch = useDispatch()
+    const navigator = useNavigate()
     const { userProfile, isLoading, error } = useSelector(
         (state) => state.profile
     )
@@ -21,22 +23,46 @@ const Dashboard = () => {
     if (isLoading) return <p>Loading...</p>
     if (error) return <p>Error: {error}</p>
     if (!userProfile?.data?.length)
-        return <p>No profile found. Please create one.</p>
+        // return <p>No profile found. Please create one.</p>
+        return navigator("/create-profile")
 
     const profile = userProfile.data[0] // Extract first profile object
     const user = profile.user?.[0]
 
     const handleDelete = async (id) => {
-        const response = await axios.delete(
-            `/api/user/profile/experience/${id}`,
-            {
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                },
-            }
-        )
-        console.log(response.data)
-        dispatch(fetchUserProfile()) // Refetch the profile after deletion
+        try {
+            const response = await axios.delete(
+                `/api/user/profile/experience/${id}`,
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                }
+            )
+            console.log(response.data)
+
+            toast.success("Experience deleated", {
+                position: "top-right",
+                autoClose: 3000,
+                hideProgressBar: false,
+                closeOnClick: true,
+                pauseOnHover: true,
+                draggable: true,
+                theme: "light",
+            })
+
+            dispatch(fetchUserProfile()) // Refetch the profile after deletion
+        } catch (error) {
+            toast.success(error.message, {
+                position: "top-right",
+                autoClose: 3000,
+                hideProgressBar: false,
+                closeOnClick: true,
+                pauseOnHover: true,
+                draggable: true,
+                theme: "light",
+            })
+        }
     }
 
     return (
@@ -54,10 +80,10 @@ const Dashboard = () => {
                     <i className="fab fa-black-tie text-primary"></i> Add
                     Experience
                 </Link>
-                <Link to="/add-education" className="btn btn-light">
+                {/* <Link to="/add-education" className="btn btn-light">
                     <i className="fas fa-graduation-cap text-primary"></i> Add
                     Education
-                </Link>
+                </Link> */}
             </div>
 
             {/* Skills Section */}

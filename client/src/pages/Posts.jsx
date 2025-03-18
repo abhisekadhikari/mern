@@ -1,6 +1,25 @@
 import React from "react"
+import { Link } from "react-router-dom"
+import { useForm } from "react-hook-form"
+import { useSelector } from "react-redux"
 
 const Posts = () => {
+    const userDetaails = useSelector((state) => state.auth)
+
+    const {
+        register,
+        formState: { errors },
+        handleSubmit,
+    } = useForm()
+
+    const onSubmit = (data) => {
+        try {
+            console.log(data)
+        } catch (error) {
+            console.log(error)
+        }
+    }
+
     return (
         <section className="container">
             <h1 className="large text-primary">Posts</h1>
@@ -12,14 +31,31 @@ const Posts = () => {
                 <div className="bg-primary p">
                     <h3>Say Something...</h3>
                 </div>
-                <form className="form my-1">
+                <form className="form my-1" onSubmit={handleSubmit(onSubmit)}>
                     <textarea
                         name="text"
                         cols="30"
                         rows="5"
                         placeholder="Create a post"
-                        required
-                    ></textarea>
+                        {...register("text", {
+                            required: "Post content is required",
+                            minLength: {
+                                value: 5,
+                                message:
+                                    "Post must be at least 5 characters long",
+                            },
+                        })}
+                    />
+                    {errors.text && (
+                        <p
+                            style={{
+                                color: "red",
+                            }}
+                        >
+                            {errors.text.message}
+                        </p>
+                    )}
+
                     <input
                         type="submit"
                         className="btn btn-dark my-1"
@@ -67,14 +103,14 @@ const Posts = () => {
 
                 <div className="post bg-white p-1 my-1">
                     <div>
-                        <a href="profile.html">
+                        <Link to="/profile">
                             <img
                                 className="round-img"
                                 src="https://www.gravatar.com/avatar/205e460b479e2e5b48aec07710c08d50?s=200"
                                 alt=""
                             />
                             <h4>John Doe</h4>
-                        </a>
+                        </Link>
                     </div>
                     <div>
                         <p className="my-1">

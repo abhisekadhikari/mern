@@ -9,15 +9,7 @@ const postValidatorSchema = {
                 errorMessage: "Text cannot be empty",
             },
         },
-        name: {
-            isString: true,
-            errorMessage: "Name must be a string",
-        },
-        avatar: {
-            optional: true,
-            isString: true,
-            errorMessage: "Avatar must be a string",
-        },
+
         /* likes: {
             optional: true,
             isArray: true,

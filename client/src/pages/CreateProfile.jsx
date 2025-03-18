@@ -1,15 +1,76 @@
 import React from "react"
-import { useForm } from "react-hook-form"
+import { useForm, useFieldArray } from "react-hook-form"
+import { useSelector } from "react-redux"
+import axios, { AxiosError } from "axios"
+import { toast } from "react-toastify"
+import { useNavigate } from "react-router-dom"
 
 const CreateProfile = () => {
+    const userDetails = useSelector((state) => state.auth)
+    const navigator = useNavigate()
+
     const {
         register,
+        control,
         handleSubmit,
         formState: { errors },
-    } = useForm()
+    } = useForm({
+        defaultValues: {
+            experience: [{}],
+            education: [{}],
+        },
+    })
 
-    const onSubmit = (data) => {
-        console.log(data)
+    const { fields: expFields, append: appendExp } = useFieldArray({
+        control,
+        name: "experience",
+    })
+    const { fields: eduFields, append: appendEdu } = useFieldArray({
+        control,
+        name: "education",
+    })
+
+    const onSubmit = async (data) => {
+        try {
+            data.skills = data.skills.split(",").map((skill) => skill.trim())
+
+            const response = await axios.post("/api/user/profile", data, {
+                headers: {
+                    Authorization: `Bearer ${userDetails.token}`,
+                },
+            })
+            console.log("Profile created:", response.data)
+
+            // Success Toast
+            toast.success("Profile created", {
+                position: "top-right",
+                autoClose: 3000,
+                hideProgressBar: false,
+                closeOnClick: true,
+                pauseOnHover: true,
+                draggable: true,
+                theme: "light",
+                onClose: () => navigator("/dashboard"),
+            })
+        } catch (error) {
+            console.error("Error creating profile:", error)
+            if (error instanceof AxiosError) {
+                console.log(error.response.data?.error)
+
+                for (const err of Object.entries(error.response.data.error)) {
+                    console.log(err)
+                    toast.error(err[1], {
+                        position: "top-right",
+                        autoClose: 5000, // Increased time for multiple errors
+                        hideProgressBar: false,
+                        closeOnClick: true,
+                        pauseOnHover: true,
+                        draggable: true,
+                        theme: "light",
+                    })
+                }
+            }
+        }
     }
 
     return (
@@ -45,7 +106,6 @@ const CreateProfile = () => {
                         <span className="error">Status is required</span>
                     )}
                 </div>
-
                 <div className="form-group">
                     <input
                         type="text"
@@ -56,7 +116,6 @@ const CreateProfile = () => {
                         <span className="error">Skills are required</span>
                     )}
                 </div>
-
                 <div className="form-group">
                     <textarea
                         placeholder="A short bio of yourself"
@@ -65,66 +124,92 @@ const CreateProfile = () => {
                 </div>
 
                 <h2>Experience</h2>
-                <div className="form-group">
-                    <input
-                        type="text"
-                        placeholder="Title"
-                        {...register("experience.title", { required: true })}
-                    />
-                    <input
-                        type="text"
-                        placeholder="Company"
-                        {...register("experience.company", { required: true })}
-                    />
-                    <input
-                        type="date"
-                        placeholder="From"
-                        {...register("experience.from", { required: true })}
-                    />
-                    <input
-                        type="date"
-                        placeholder="To"
-                        {...register("experience.to")}
-                    />
-                    <input
-                        type="checkbox"
-                        {...register("experience.current")}
-                    />{" "}
-                    Currently Working
-                </div>
+                {expFields.map((item, index) => (
+                    <div className="form-group" key={index}>
+                        <input
+                            type="text"
+                            placeholder="Title"
+                            {...register(`experience.${index}.title`, {
+                                required: true,
+                            })}
+                        />
+                        <input
+                            type="text"
+                            placeholder="Company"
+                            {...register(`experience.${index}.company`, {
+                                required: true,
+                            })}
+                        />
+                        <input
+                            type="date"
+                            placeholder="From"
+                            {...register(`experience.${index}.from`, {
+                                required: true,
+                            })}
+                        />
+                        <input
+                            type="date"
+                            placeholder="To"
+                            {...register(`experience.${index}.to`)}
+                        />
+                        <input
+                            type="checkbox"
+                            {...register(`experience.${index}.current`)}
+                        />{" "}
+                        Currently Working
+                    </div>
+                ))}
+                <button type="button" onClick={() => appendExp({})}>
+                    Add Experience
+                </button>
 
                 <h2>Education</h2>
-                <div className="form-group">
-                    <input
-                        type="text"
-                        placeholder="School"
-                        {...register("education.school", { required: true })}
-                    />
-                    <input
-                        type="text"
-                        placeholder="Degree"
-                        {...register("education.degree", { required: true })}
-                    />
-                    <input
-                        type="text"
-                        placeholder="Field of Study"
-                        {...register("education.fieldofstudy", {
-                            required: true,
-                        })}
-                    />
-                    <input
-                        type="date"
-                        placeholder="From"
-                        {...register("education.from", { required: true })}
-                    />
-                    <input
-                        type="date"
-                        placeholder="To"
-                        {...register("education.to")}
-                    />
-                    <input type="checkbox" {...register("education.current")} />{" "}
-                    Currently Studying
-                </div>
+                {eduFields.map((item, index) => (
+                    <div className="form-group" key={index}>
+                        <input
+                            type="text"
+                            placeholder="School"
+                            {...register(`education.${index}.school`, {
+                                required: true,
+                            })}
+                        />
+                        <input
+                            type="text"
+                            placeholder="Degree"
+                            {...register(`education.${index}.degree`, {
+                                required: true,
+                            })}
+                        />
+                        <input
+                            type="text"
+                            placeholder="Field of Study"
+                            {...register(`education.${index}.fieldofstudy`, {
+                                required: true,
+                            })}
+                        />
+                        <input
+                            type="date"
+                            placeholder="From"
+                            {...register(`education.${index}.from`, {
+                                required: true,
+                            })}
+                        />
+                        <input
+                            type="date"
+                            placeholder="To"
+                            {...register(`education.${index}.to`)}
+                        />
+                        <input
+                            type="checkbox"
+                            {...register(`education.${index}.current`)}
+                        />{" "}
+                        Currently Studying
+                    </div>
+                ))}
+                <button type="button" onClick={() => appendEdu({})}>
+                    Add Education
+                </button>
+                <br />
 
                 <input type="submit" className="btn btn-primary my-1" />
             </form>

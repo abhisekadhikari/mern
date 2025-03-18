@@ -2,14 +2,16 @@ import React, { useState } from "react"
 import { useForm } from "react-hook-form"
 import axios from "axios"
 import { toast } from "react-toastify"
+import { useNavigate } from "react-router-dom"
 
 const AddExperience = () => {
     const {
         register,
         handleSubmit,
-
         formState: { errors },
     } = useForm()
+
+    const navigator = useNavigate()
 
     const [isCurrent, setIsCurrent] = useState(false)
 
@@ -40,6 +42,7 @@ const AddExperience = () => {
                 pauseOnHover: true,
                 draggable: true,
                 theme: "light",
+                onClose: () => navigator("/dashboard"),
             })
         } catch (error) {
             console.log(error)
