@@ -175,7 +175,6 @@ const getUserProfile = asyncErrorHandler(async (req, res) => {
  */
 const getUserProfileWithId = asyncErrorHandler(async (req, res) => {
     const { user_id } = req.params
-    console.log(user_id)
 
     const userProfile = await Profile.aggregate([
         [
