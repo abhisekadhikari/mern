@@ -130,7 +130,7 @@ const createUserProfile = asyncErrorHandler(async (req, res) => {
 
 /**
  * @route   GET /api/profile
- * @desc    Get user profile along with user details
+ * @desc    Get logged in user profile along with user details
  * @access  Private
  */
 const getUserProfile = asyncErrorHandler(async (req, res) => {
@@ -161,7 +161,39 @@ const getUserProfile = asyncErrorHandler(async (req, res) => {
         ],
     ])
 
-    console.log(userProfile)
+    return res.status(200).json({
+        success: true,
+        message: "User profile retrieved successfully",
+        data: userProfile,
+    })
+})
+
+/**
+ * @route   GET /api/profile
+ * @desc    Get user profile along with user details
+ * @access  Private
+ */
+const getUserProfileWithId = asyncErrorHandler(async (req, res) => {
+    const { user_id } = req.params
+    console.log(user_id)
+
+    const userProfile = await Profile.aggregate([
+        [
+            {
+                $match: {
+                    user_id: new mongoose.Types.ObjectId(user_id),
+                },
+            },
+            {
+                $lookup: {
+                    from: "users",
+                    localField: "user_id",
+                    foreignField: "_id",
+                    as: "user",
+                },
+            },
+        ],
+    ])
 
     return res.status(200).json({
         success: true,
@@ -235,6 +267,7 @@ module.exports = {
     loginUser,
     getUserProfile,
     createUserProfile,
+    getUserProfileWithId,
     updateUserExperience,
     removeUserExperience,
 }

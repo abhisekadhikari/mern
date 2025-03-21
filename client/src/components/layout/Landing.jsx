@@ -24,6 +24,9 @@ const Landing = () => {
                                 <Link to="/dashboard" className="btn btn-light">
                                     Dashboard
                                 </Link>
+                                <Link to="/posts" className="btn btn-light">
+                                    Posts
+                                </Link>
                             </>
                         ) : (
                             <>

@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react"
-import { Link } from "react-router-dom"
 import { useForm } from "react-hook-form"
 import { useSelector } from "react-redux"
 import axios from "axios"
@@ -7,64 +6,92 @@ import { toast } from "react-toastify"
 
 const Posts = () => {
     const { token } = useSelector((state) => state.auth)
+    const {userProfile} = useSelector((state) => state.profile)
     const [posts, setPosts] = useState([])
+
+    console.log(userProfile.data[0])
 
     const {
         register,
         formState: { errors },
         handleSubmit,
+        reset
     } = useForm()
 
-    const onSubmit = async (data) => {
-        try {
-            const response = await axios.post(
-                "api/post",
-                data, // Send data directly
-                {
-                    headers: {
-                        Authorization: `Bearer ${token}`, // Pass token in headers
-                        "Content-Type": "application/json", // Ensure JSON format
-                    },
-                }
-            )
+    // Fetch all posts once when the component mounts
+    useEffect(() => {
+        fetchAllPosts()
+    }, []) // ✅ Empty dependency array to run only once
 
-            toast.success(response.data.message, {
-                position: "top-right",
-                autoClose: 1000, // Increased time for multiple errors
-                hideProgressBar: false,
-                closeOnClick: true,
-                pauseOnHover: true,
-                draggable: true,
-                theme: "light",
-                // onClose: () => navigator("/dashboard"),
+    const fetchAllPosts = async () => {
+        try {
+            const { data } = await axios.get("/api/post", {
+                headers: { Authorization: `Bearer ${token}` }
             })
+            setPosts(data.data) // ✅ Correctly updates state
         } catch (error) {
-            toast.error(error.message, {
-                position: "top-right",
-                autoClose: 1000, // Increased time for multiple errors
-                hideProgressBar: false,
-                closeOnClick: true,
-                pauseOnHover: true,
-                draggable: true,
-                theme: "light",
-                // onClose: () => navigator("/dashboard"),
-            })
+            toast.error("Failed to fetch posts")
         }
     }
 
-    const fetchAllPosts = async () => {
-        const { data } = await axios.get("/api/post", {
-            headers: {
-                Authorization: `Bearer ${token}`,
-            },
-        })
+    const onSubmit = async (data) => {
+        try {
+            const response = await axios.post("/api/post", data, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    "Content-Type": "application/json",
+                },
+            })
 
-        setPosts(data.data)
+            toast.success(response.data.message, { autoClose: 1000 })
+            reset()
+            fetchAllPosts() // ✅ Fetch latest posts after submission
+        } catch (error) {
+            toast.error(error.message, { autoClose: 1000 })
+        }
     }
 
-    useEffect(() => {
-        fetchAllPosts()
-    }, [])
+    const handleLike = async (postId) => {
+        try {
+
+            const { data } = await axios.post(
+                `/api/post/${postId}/like`,
+                {}, // Empty object for the request body
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                }
+            );
+
+            toast.success(data.message, { autoClose: 1000 })
+
+            fetchAllPosts(); // Refresh the posts list
+        } catch (err) {
+            toast.error(err.response.data.error, { autoClose: 1000 })
+        }
+    };
+
+    const handleUnlike = async (postId) => {
+        try {
+
+            const { data } = await axios.delete(
+                `/api/post/${postId}/unlike`,
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                }
+            );
+
+            toast.success(data.message, { autoClose: 1000 })
+
+            fetchAllPosts(); // Refresh the posts list
+        } catch (err) {
+            toast.error(err.response.data.error, { autoClose: 1000 })
+        }
+    };
+
 
     return (
         <section className="container">
@@ -87,69 +114,55 @@ const Posts = () => {
                             required: "Post content is required",
                             minLength: {
                                 value: 5,
-                                message:
-                                    "Post must be at least 5 characters long",
+                                message: "Post must be at least 5 characters long",
                             },
                         })}
                     />
                     {errors.text && (
-                        <p
-                            style={{
-                                color: "red",
-                            }}
-                        >
-                            {errors.text.message}
-                        </p>
+                        <p style={{ color: "red" }}>{errors.text.message}</p>
                     )}
-
-                    <input
-                        type="submit"
-                        className="btn btn-dark my-1"
-                        value="Submit"
-                    />
+                    <input type="submit" className="btn btn-dark my-1" value="Submit" />
                 </form>
             </div>
 
             <div className="posts">
-                {posts.map((post) => {
-                    return (
-                        <div className="post bg-white p-1 my-1" key={post._id}>
-                            <div>
-                                <a href="profile.html">
-                                    <img
-                                        className="round-img"
-                                        src="https://www.gravatar.com/avatar/205e460b479e2e5b48aec07710c08d50?s=200"
-                                        alt=""
-                                    />
-                                    <h4>{post._id}</h4>
-                                </a>
-                            </div>
-                            <div>
-                                <p className="my-1">{post.text}</p>
-                                <p className="post-date">
-                                    Posted on {post.createdAt}
-                                </p>
-                                <button type="button" className="btn btn-light">
-                                    <i className="fas fa-thumbs-up"></i>
-                                    <span>4</span>
-                                </button>
-                                <button type="button" className="btn btn-light">
-                                    <i className="fas fa-thumbs-down"></i>
-                                </button>
-                                <a href="post.html" className="btn btn-primary">
-                                    Discussion{" "}
-                                    <span className="comment-count">2</span>
-                                </a>
-                                <button
-                                    type="button"
-                                    className="btn btn-danger"
-                                >
-                                    <i className="fas fa-times"></i>
-                                </button>
-                            </div>
+                {posts.map((post) => (
+                    <div className="post bg-white p-1 my-1" key={post._id}>
+                        <div>
+                            <a href="profile.html">
+                                <img
+                                    className="round-img"
+                                    src={post.user.avatar}
+                                    alt=""
+                                />
+                                <h4>{post.user.name}</h4>
+                            </a>
                         </div>
-                    )
-                })}
+                        <div>
+                            <p className="my-1">{post.text}</p>
+                            <p className="post-date">Posted on {post.createdAt}</p>
+                            <button type="button" onClick={() => handleLike(post._id)} className="btn btn-light">
+                                <i className="fas fa-thumbs-up"></i> <span>{post.likes.length}</span>
+                            </button>
+
+                            <button type="button" onClick={() => handleUnlike(post._id)} className="btn btn-light">
+                                <i className="fas fa-thumbs-down"></i>
+                            </button>
+
+                            <a href="#" className="btn btn-primary">
+                                Discussion <span className="comment-count">2</span>
+                            </a>
+
+                            {
+                                (userProfile.data[0].user_id === post.user?._id) && (
+                                    <button type="button" className="btn btn-danger">
+                                        <i className="fas fa-times"></i>
+                                    </button>
+                                )
+                            }
+                        </div>
+                    </div>
+                ))}
             </div>
         </section>
     )

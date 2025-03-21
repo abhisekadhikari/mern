@@ -1,8 +1,8 @@
-import React, { useState } from "react"
+// import React, { useState } from "react"
 import { useForm } from "react-hook-form"
 import axios from "axios"
 import { toast } from "react-toastify"
-import { useNavigate } from "react-router-dom"
+import { Link, useNavigate } from "react-router-dom"
 
 const AddExperience = () => {
     const {
@@ -13,7 +13,7 @@ const AddExperience = () => {
 
     const navigator = useNavigate()
 
-    const [isCurrent, setIsCurrent] = useState(false)
+    // const [isCurrent, setIsCurrent] = useState(false)
 
     const onSubmit = async (data) => {
         console.log(data)
@@ -94,7 +94,7 @@ const AddExperience = () => {
                         <p className="error-text">{errors.from.message}</p>
                     )}
                 </div>
-                <div className="form-group">
+                {/* <div className="form-group">
                     <p>
                         <input
                             type="checkbox"
@@ -103,13 +103,13 @@ const AddExperience = () => {
                         />{" "}
                         Current Job
                     </p>
-                </div>
+                </div> */}
                 <div className="form-group">
                     <h4>To Date</h4>
                     <input
                         type="date"
                         {...register("to")}
-                        disabled={isCurrent}
+                        // disabled={isCurrent}
                     />
                 </div>
                 <div className="form-group">
@@ -121,9 +121,9 @@ const AddExperience = () => {
                     ></textarea>
                 </div>
                 <input type="submit" className="btn btn-primary my-1" />
-                <a className="btn btn-light my-1" href="dashboard.html">
+                <Link className="btn btn-light my-1" to="/">
                     Go Back
-                </a>
+                </Link>
             </form>
         </section>
     )

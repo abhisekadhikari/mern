@@ -38,7 +38,7 @@ const createPost = asyncErrorHandler(async (req, res) => {
  * @access Public
  */
 const getAllPosts = asyncErrorHandler(async (req, res) => {
-    const posts = await Post.find().sort({ createdAt: -1 }) // Sorting by latest posts first
+    const posts = await Post.find({}).populate("user").sort({createdAt: -1})
 
     res.status(200).json({
         success: true,

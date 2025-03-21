@@ -3,6 +3,7 @@ const {
     createUserProfile,
     updateUserExperience,
     removeUserExperience,
+    getUserProfileWithId,
 } = require("../controllers/user.controller")
 const profileValidationSchema = require("../validators/profile.validator")
 
@@ -23,6 +24,13 @@ profileRouter
  * @access  Private
  */
 profileRouter.route("/profile").get(getUserProfile)
+
+/**
+ * @route   GET /api/profile
+ * @desc    Get user profile with id
+ * @access  Private
+ */
+profileRouter.route("/profile/:user_id").get(getUserProfileWithId)
 
 /**
  * @route   PATCH /api/profile/experience

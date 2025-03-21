@@ -65,7 +65,7 @@ userSchema.methods.signJwtToken = function () {
         envConfig.JWT_SECRET,
         {
             issuer: "Udemy", // Token issuer
-            expiresIn: "3h", // Token expiration time
+            expiresIn: "30d", // Token expiration time
         }
     )
 }

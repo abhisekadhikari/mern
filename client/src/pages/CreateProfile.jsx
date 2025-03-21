@@ -155,7 +155,7 @@ const CreateProfile = () => {
                         <input
                             type="checkbox"
                             {...register(`experience.${index}.current`)}
-                        />{" "}
+                        />
                         Currently Working
                     </div>
                 ))}
@@ -199,11 +199,11 @@ const CreateProfile = () => {
                             placeholder="To"
                             {...register(`education.${index}.to`)}
                         />
-                        <input
+                        {/* <input
                             type="checkbox"
                             {...register(`education.${index}.current`)}
                         />{" "}
-                        Currently Studying
+                        Currently Studying */}
                     </div>
                 ))}
                 <button type="button" onClick={() => appendEdu({})}>
