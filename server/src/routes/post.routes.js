@@ -8,6 +8,7 @@ const {
     // unlikePost,
     commentPost,
     deleteComment,
+    getPostById,
 } = require("../controllers/post.controller")
 const postValidatorSchema = require("../validators/post.validator")
 const checkAuth = require("../middlewares/checkAuth.middleware")
@@ -23,6 +24,13 @@ const postRouter = Router()
 postRouter
     .route("/")
     .post(checkAuth, postValidatorSchema.postValidator, createPost)
+
+/**
+ * @route   GET /post
+ * @desc    Retrieve post by id
+ * @access  Public
+ */
+postRouter.route("/:postid").get(getPostById)
 
 /**
  * @route   GET /post

@@ -133,22 +133,20 @@ const createUserProfile = asyncErrorHandler(async (req, res) => {
  * @desc    Get logged in user profile along with user details
  * @access  Private
  */
-const getUserProfile = asyncErrorHandler(async (req, res) => {
-    const userProfile = await Profile.aggregate([
-        /* {
-            $lookup: {
-                from: "users",
-                localField: "user_id",
-                foreignField: "_id",
-                as: "user",
-            },
-        }, */
 
-        [
+const getUserProfile = asyncErrorHandler(async (req, res) => {
+    try {
+        console.log(req.query)
+        console.log(req.user._id)
+
+        // Check if a valid user_id is provided; otherwise, use the logged-in user's ID
+        const user_id = mongoose.isValidObjectId(req.query.user_id)
+            ? new mongoose.Types.ObjectId(req.query.user_id)
+            : new mongoose.Types.ObjectId(req.user._id)
+
+        const userProfile = await Profile.aggregate([
             {
-                $match: {
-                    user_id: new mongoose.Types.ObjectId(req.user._id),
-                },
+                $match: { user_id },
             },
             {
                 $lookup: {
@@ -158,14 +156,30 @@ const getUserProfile = asyncErrorHandler(async (req, res) => {
                     as: "user",
                 },
             },
-        ],
-    ])
+            {
+                $unwind: "$user", // If you expect a single user, otherwise remove this
+            },
+        ])
 
-    return res.status(200).json({
-        success: true,
-        message: "User profile retrieved successfully",
-        data: userProfile,
-    })
+        if (!userProfile.length) {
+            return res.status(404).json({
+                success: false,
+                message: "User profile not found",
+            })
+        }
+
+        return res.status(200).json({
+            success: true,
+            message: "User profile retrieved successfully",
+            data: userProfile,
+        })
+    } catch (error) {
+        console.error(error)
+        return res.status(500).json({
+            success: false,
+            message: "An error occurred while fetching the user profile",
+        })
+    }
 })
 
 /**
@@ -173,22 +187,28 @@ const getUserProfile = asyncErrorHandler(async (req, res) => {
  * @desc    Get user profile along with user details
  * @access  Private
  */
-const getUserProfileWithId = asyncErrorHandler(async (req, res) => {
-    const { user_id } = req.params
-
-    const userProfile = await Profile.aggregate([
+const getUsersProfile = asyncErrorHandler(async (req, res) => {
+    const usersProfile = await User.aggregate([
         [
             {
-                $match: {
-                    user_id: new mongoose.Types.ObjectId(user_id),
+                $lookup: {
+                    from: "profiles",
+                    localField: "_id",
+                    foreignField: "user_id",
+                    as: "profile",
                 },
             },
             {
-                $lookup: {
-                    from: "users",
-                    localField: "user_id",
-                    foreignField: "_id",
-                    as: "user",
+                $unwind: {
+                    path: "$profile",
+                },
+            },
+            {
+                $project: {
+                    name: 1,
+                    "profile.status": 1,
+                    "profile.skills": 1,
+                    "profile.bio": 1,
                 },
             },
         ],
@@ -196,8 +216,8 @@ const getUserProfileWithId = asyncErrorHandler(async (req, res) => {
 
     return res.status(200).json({
         success: true,
-        message: "User profile retrieved successfully",
-        data: userProfile,
+        message: "Users profile retrieved successfully",
+        data: usersProfile,
     })
 })
 
@@ -266,7 +286,7 @@ module.exports = {
     loginUser,
     getUserProfile,
     createUserProfile,
-    getUserProfileWithId,
+    getUsersProfile,
     updateUserExperience,
     removeUserExperience,
 }

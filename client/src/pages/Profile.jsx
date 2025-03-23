@@ -1,32 +1,77 @@
-import React from "react"
+import axios from "axios"
+import React, { useEffect, useState } from "react"
 import { useSelector } from "react-redux"
+import { Link, useSearchParams } from "react-router-dom"
 
 const Profile = () => {
+    const [searchParams] = useSearchParams()
+    const { token } = useSelector((state) => state.auth)
     const { userProfile, isLoading, error } = useSelector(
         (state) => state.profile
     )
 
-    if (isLoading) {
+    const [otherUserProfile, setOtherUserProfile] = useState(null)
+    const [loadingOtherProfile, setLoadingOtherProfile] = useState(false)
+    const [fetchError, setFetchError] = useState("")
+
+    useEffect(() => {
+        const fetchUserProfileFromParams = async () => {
+            const user_id = searchParams.get("user_id")
+            if (!user_id) return
+
+            try {
+                setLoadingOtherProfile(true)
+                setFetchError("")
+
+                const { data } = await axios.get(
+                    `/api/user/profile?user_id=${user_id}`,
+                    {
+                        headers: {
+                            Authorization: `Bearer ${token}`,
+                        },
+                    }
+                )
+
+                setOtherUserProfile(data.data[0])
+            } catch (error) {
+                setFetchError("Failed to fetch user profile.")
+            } finally {
+                setLoadingOtherProfile(false)
+            }
+        }
+
+        fetchUserProfileFromParams()
+    }, [searchParams, token])
+
+    const profile = otherUserProfile || userProfile?.data?.[0]
+
+    if (isLoading || loadingOtherProfile) {
         return <p>Loading profile...</p>
     }
 
-    if (error) {
-        return <p>Error loading profile: {error}</p>
+    if (error || fetchError) {
+        return <p>Error loading profile: {error || fetchError}</p>
     }
 
-    if (!userProfile || !userProfile.data || userProfile.data.length === 0) {
+    if (!profile) {
         return <p>No profile found.</p>
     }
 
-    const profile = userProfile.data[0]
-    const user = profile.user[0]
-    const { status, skills, bio, experience, education } = profile
+    // Access user directly since it's an object, not an array
+    const user = profile.user || {}
+    const {
+        status,
+        skills = [],
+        bio,
+        experience = [],
+        education = [],
+    } = profile
 
     return (
         <section className="container">
-            <a href="/profiles" className="btn btn-light">
+            <Link to="/profiles" className="btn btn-light">
                 Back To Profiles
-            </a>
+            </Link>
 
             <div className="profile-grid my-1">
                 {/* Top Section */}
@@ -51,11 +96,15 @@ const Profile = () => {
                     <div className="line"></div>
                     <h2 className="text-primary">Skill Set</h2>
                     <div className="skills">
-                        {skills.map((skill, index) => (
-                            <div key={index} className="p-1">
-                                <i className="fa fa-check"></i> {skill}
-                            </div>
-                        ))}
+                        {skills.length > 0 ? (
+                            skills.map((skill, index) => (
+                                <div key={index} className="p-1">
+                                    <i className="fa fa-check"></i> {skill}
+                                </div>
+                            ))
+                        ) : (
+                            <p>No skills listed</p>
+                        )}
                     </div>
                 </div>
 

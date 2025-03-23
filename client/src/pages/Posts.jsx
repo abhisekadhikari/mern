@@ -1,36 +1,40 @@
 import React, { useEffect, useState } from "react"
 import { useForm } from "react-hook-form"
-import { useSelector } from "react-redux"
+import { useDispatch, useSelector } from "react-redux"
 import axios from "axios"
 import { toast } from "react-toastify"
+import { Link } from "react-router-dom"
+import { fetchUserProfile } from "../features/profileSlice"
 
 const Posts = () => {
-    const { token } = useSelector((state) => state.auth)
-    const {userProfile} = useSelector((state) => state.profile)
-    const [posts, setPosts] = useState([])
-
-    console.log(userProfile.data[0])
+    const dispatch = useDispatch()
 
     const {
         register,
-        formState: { errors },
+        reset,
         handleSubmit,
-        reset
+        formState: { errors },
     } = useForm()
 
-    // Fetch all posts once when the component mounts
+    const { token } = useSelector((state) => state.auth)
+    const { userProfile, loading } = useSelector((state) => state.profile)
+    const [posts, setPosts] = useState([])
+
     useEffect(() => {
+        if (!userProfile && !loading) {
+            dispatch(fetchUserProfile())
+        }
         fetchAllPosts()
-    }, []) // ✅ Empty dependency array to run only once
+    }, [dispatch, userProfile, loading])
 
     const fetchAllPosts = async () => {
         try {
             const { data } = await axios.get("/api/post", {
-                headers: { Authorization: `Bearer ${token}` }
+                headers: { Authorization: `Bearer ${token}` },
             })
-            setPosts(data.data) // ✅ Correctly updates state
+            setPosts(data.data)
         } catch (error) {
-            toast.error("Failed to fetch posts")
+            toast.error(error.message)
         }
     }
 
@@ -42,10 +46,9 @@ const Posts = () => {
                     "Content-Type": "application/json",
                 },
             })
-
             toast.success(response.data.message, { autoClose: 1000 })
             reset()
-            fetchAllPosts() // ✅ Fetch latest posts after submission
+            fetchAllPosts()
         } catch (error) {
             toast.error(error.message, { autoClose: 1000 })
         }
@@ -53,45 +56,35 @@ const Posts = () => {
 
     const handleLike = async (postId) => {
         try {
-
             const { data } = await axios.post(
                 `/api/post/${postId}/like`,
-                {}, // Empty object for the request body
+                {},
                 {
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                    },
+                    headers: { Authorization: `Bearer ${token}` },
                 }
-            );
-
+            )
             toast.success(data.message, { autoClose: 1000 })
-
-            fetchAllPosts(); // Refresh the posts list
+            fetchAllPosts()
         } catch (err) {
-            toast.error(err.response.data.error, { autoClose: 1000 })
+            toast.error(err.response?.data?.error || err.message, {
+                autoClose: 1000,
+            })
         }
-    };
+    }
 
     const handleUnlike = async (postId) => {
         try {
-
-            const { data } = await axios.delete(
-                `/api/post/${postId}/unlike`,
-                {
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                    },
-                }
-            );
-
+            const { data } = await axios.delete(`/api/post/${postId}/unlike`, {
+                headers: { Authorization: `Bearer ${token}` },
+            })
             toast.success(data.message, { autoClose: 1000 })
-
-            fetchAllPosts(); // Refresh the posts list
+            fetchAllPosts()
         } catch (err) {
-            toast.error(err.response.data.error, { autoClose: 1000 })
+            toast.error(err.response?.data?.error || err.message, {
+                autoClose: 1000,
+            })
         }
-    };
-
+    }
 
     return (
         <section className="container">
@@ -114,14 +107,19 @@ const Posts = () => {
                             required: "Post content is required",
                             minLength: {
                                 value: 5,
-                                message: "Post must be at least 5 characters long",
+                                message:
+                                    "Post must be at least 5 characters long",
                             },
                         })}
                     />
                     {errors.text && (
                         <p style={{ color: "red" }}>{errors.text.message}</p>
                     )}
-                    <input type="submit" className="btn btn-dark my-1" value="Submit" />
+                    <input
+                        type="submit"
+                        className="btn btn-dark my-1"
+                        value="Submit"
+                    />
                 </form>
             </div>
 
@@ -129,37 +127,53 @@ const Posts = () => {
                 {posts.map((post) => (
                     <div className="post bg-white p-1 my-1" key={post._id}>
                         <div>
-                            <a href="profile.html">
+                            <Link to={`/profile?user_id=${post.user._id}`}>
                                 <img
                                     className="round-img"
                                     src={post.user.avatar}
                                     alt=""
                                 />
                                 <h4>{post.user.name}</h4>
-                            </a>
+                            </Link>
                         </div>
                         <div>
                             <p className="my-1">{post.text}</p>
-                            <p className="post-date">Posted on {post.createdAt}</p>
-                            <button type="button" onClick={() => handleLike(post._id)} className="btn btn-light">
-                                <i className="fas fa-thumbs-up"></i> <span>{post.likes.length}</span>
+                            <p className="post-date">
+                                Posted on {post.createdAt}
+                            </p>
+                            <button
+                                type="button"
+                                onClick={() => handleLike(post._id)}
+                                className="btn btn-light"
+                            >
+                                <i className="fas fa-thumbs-up"></i>{" "}
+                                <span>{post.likes.length}</span>
                             </button>
-
-                            <button type="button" onClick={() => handleUnlike(post._id)} className="btn btn-light">
+                            <button
+                                type="button"
+                                onClick={() => handleUnlike(post._id)}
+                                className="btn btn-light"
+                            >
                                 <i className="fas fa-thumbs-down"></i>
                             </button>
-
-                            <a href="#" className="btn btn-primary">
-                                Discussion <span className="comment-count">2</span>
-                            </a>
-
-                            {
-                                (userProfile.data[0].user_id === post.user?._id) && (
-                                    <button type="button" className="btn btn-danger">
-                                        <i className="fas fa-times"></i>
-                                    </button>
-                                )
-                            }
+                            <Link
+                                to={`/post/${post._id}`}
+                                className="btn btn-primary"
+                            >
+                                Discussion
+                                <span className="comment-count">
+                                    {post.comments.length}
+                                </span>
+                            </Link>
+                            {userProfile?.data?.[0]?.user_id ===
+                                post.user?._id && (
+                                <button
+                                    type="button"
+                                    className="btn btn-danger"
+                                >
+                                    <i className="fas fa-times"></i>
+                                </button>
+                            )}
                         </div>
                     </div>
                 ))}

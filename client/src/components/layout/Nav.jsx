@@ -7,7 +7,6 @@ const Nav = () => {
     const { isAuthenticated } = useSelector((state) => state.auth)
 
     const dispatch = useDispatch()
-    const navigator = useNavigate()
     const { userProfile, isLoading, error } = useSelector(
         (state) => state.profile
     )
@@ -40,11 +39,11 @@ const Nav = () => {
                             <Link to="/profile">Profile</Link>
                         </li>
                         <li>
-                            <Link to="/posts">Create Post</Link>
+                            <Link to="/posts">Posts</Link>
                         </li>
-                        <li>
+                        {/* <li>
                             <Link to="/post">Posts</Link>
-                        </li>
+                        </li> */}
                         <li>
                             <Link to="/logout">Logout</Link>
                         </li>

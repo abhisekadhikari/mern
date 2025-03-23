@@ -38,12 +38,31 @@ const createPost = asyncErrorHandler(async (req, res) => {
  * @access Public
  */
 const getAllPosts = asyncErrorHandler(async (req, res) => {
-    const posts = await Post.find({}).populate("user").sort({createdAt: -1})
+    const posts = await Post.find({}).populate("user").sort({ createdAt: -1 })
 
     res.status(200).json({
         success: true,
         message: "Posts fetched successfully",
         data: posts,
+    })
+})
+
+/**
+ * @desc   Get all posts
+ * @route  GET /post
+ * @access Public
+ */
+const getPostById = asyncErrorHandler(async (req, res) => {
+    const { postid } = req.params
+
+    const post = await Post.findById(postid)
+        .populate("user")
+        .sort({ createdAt: -1 })
+
+    res.status(200).json({
+        success: true,
+        message: "Post fetched successfully",
+        data: post,
     })
 })
 
@@ -210,6 +229,7 @@ const deleteComment = asyncErrorHandler(async (req, res) => {
 module.exports = {
     createPost,
     getAllPosts,
+    getPostById,
     updatePost,
     deletePost,
     likePost,

@@ -1,6 +1,46 @@
-import React from "react"
+import React, { useEffect, useState } from "react"
+import axios from "axios"
+import { useSelector } from "react-redux"
+import { useNavigate } from "react-router-dom"
 
 const Profiles = () => {
+    const { token } = useSelector((state) => state.auth)
+    const [profiles, setProfiles] = useState([])
+    const [loading, setLoading] = useState(true)
+    const [error, setError] = useState("")
+    const navigate = useNavigate()
+
+    useEffect(() => {
+        const fetchUsersProfile = async () => {
+            try {
+                const { data } = await axios.get("/api/user/profile/all", {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                })
+                setProfiles(data.data)
+            } catch (err) {
+                setError("Failed to fetch profiles.")
+            } finally {
+                setLoading(false)
+            }
+        }
+
+        fetchUsersProfile()
+    }, [token])
+
+    if (loading) {
+        return <p>Loading profiles...</p>
+    }
+
+    if (error) {
+        return <p>{error}</p>
+    }
+
+    if (profiles.length === 0) {
+        return <p>No profiles found.</p>
+    }
+
     return (
         <section className="container">
             <h1 className="large text-primary">Developers</h1>
@@ -9,67 +49,40 @@ const Profiles = () => {
                 with developers
             </p>
             <div className="profiles">
-                <div className="profile bg-light">
-                    <img
-                        className="round-img"
-                        src="https://www.gravatar.com/avatar/205e460b479e2e5b48aec07710c08d50?s=200"
-                        alt=""
-                    />
-                    <div>
-                        <h2>John Doe</h2>
-                        <p>Developer at Microsoft</p>
-                        <p>Seattle, WA</p>
-                        <a href="profile.html" className="btn btn-primary">
-                            View Profile
-                        </a>
-                    </div>
+                {profiles.map((profile) => {
+                    const { _id, name, profile: userProfile } = profile
+                    const { status, skills, bio } = userProfile
 
-                    <ul>
-                        <li className="text-primary">
-                            <i className="fas fa-check"></i> HTML
-                        </li>
-                        <li className="text-primary">
-                            <i className="fas fa-check"></i> CSS
-                        </li>
-                        <li className="text-primary">
-                            <i className="fas fa-check"></i> JavaScript
-                        </li>
-                        <li className="text-primary">
-                            <i className="fas fa-check"></i> Python
-                        </li>
-                        <li className="text-primary">
-                            <i className="fas fa-check"></i> C#
-                        </li>
-                    </ul>
-                </div>
-
-                <div className="profile bg-light">
-                    <img
-                        className="round-img"
-                        src="https://www.gravatar.com/avatar/205e460b479e2e5b48aec07710c08d50?s=200"
-                        alt=""
-                    />
-                    <div>
-                        <h2>John Doe</h2>
-                        <p>Developer at Microsoft</p>
-                        <p>Seattle, WA</p>
-                        <a href="profile.html" className="btn btn-primary">
-                            View Profile
-                        </a>
-                    </div>
-
-                    <ul>
-                        <li className="text-primary">
-                            <i className="fas fa-check"></i> HTML
-                        </li>
-                        <li className="text-primary">
-                            <i className="fas fa-check"></i> CSS
-                        </li>
-                        <li className="text-primary">
-                            <i className="fas fa-check"></i> JavaScript
-                        </li>
-                    </ul>
-                </div>
+                    return (
+                        <div key={_id} className="profile bg-light">
+                            <img
+                                className="round-img"
+                                src="https://www.gravatar.com/avatar/?d=identicon"
+                                alt={name}
+                            />
+                            <div>
+                                <h2>{name}</h2>
+                                <p>{status}</p>
+                                <p>{bio}</p>
+                                <button
+                                    className="btn btn-primary"
+                                    onClick={() =>
+                                        navigate(`/profile?user_id=${_id}`)
+                                    }
+                                >
+                                    View Profile
+                                </button>
+                            </div>
+                            <ul>
+                                {skills.slice(0, 5).map((skill, index) => (
+                                    <li key={index} className="text-primary">
+                                        <i className="fas fa-check"></i> {skill}
+                                    </li>
+                                ))}
+                            </ul>
+                        </div>
+                    )
+                })}
             </div>
         </section>
     )
