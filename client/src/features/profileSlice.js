@@ -16,13 +16,11 @@ export const fetchUserProfile = createAsyncThunk(
 
             return response.data // Return user profile data
         } catch (error) {
-
             console.log(error)
 
             return rejectWithValue(
                 error.response?.data || "Failed to fetch profile"
             )
-            localStorage.clear()
         }
     }
 )

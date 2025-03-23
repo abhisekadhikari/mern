@@ -4,6 +4,8 @@ const {
     updateUserExperience,
     removeUserExperience,
     getUsersProfile,
+    updateUserProfile,
+    removeUserEducation,
 } = require("../controllers/user.controller")
 const profileValidationSchema = require("../validators/profile.validator")
 
@@ -24,6 +26,15 @@ profileRouter
  * @access  Private
  */
 profileRouter.route("/profile").get(getUserProfile)
+
+/**
+ * @route   PUT /api/profile
+ * @desc    Update user profile
+ * @access  Private
+ */
+profileRouter
+    .route("/profile")
+    .put(profileValidationSchema.profileValidator, updateUserProfile)
 
 /**
  * @route   GET /api/profile
@@ -47,5 +58,12 @@ profileRouter
  * @access  Private
  */
 profileRouter.route("/profile/experience/:exp_id").delete(removeUserExperience)
+
+/**
+ * @route   DELETE /api/profile/education/:exp_id
+ * @desc    Remove an education entry from profile
+ * @access  Private
+ */
+profileRouter.route("/profile/education/:edu_id").delete(removeUserEducation)
 
 module.exports = profileRouter

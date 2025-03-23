@@ -1,81 +1,114 @@
-import React from "react"
+import React, { useEffect } from "react"
 import { useForm, useFieldArray } from "react-hook-form"
 import { useSelector } from "react-redux"
 import axios, { AxiosError } from "axios"
 import { toast } from "react-toastify"
 import { useNavigate } from "react-router-dom"
 
-const CreateProfile = () => {
-    const userDetails = useSelector((state) => state.auth)
-    const navigator = useNavigate()
+const UpdateProfile = () => {
+    const { userProfile, isLoading, error } = useSelector(
+        (state) => state.profile
+    )
+
+    const { token: userDetails } = useSelector((state) => state.auth)
+    const navigate = useNavigate()
 
     const {
         register,
         control,
         handleSubmit,
+        setValue,
         watch,
         formState: { errors },
     } = useForm({
         defaultValues: {
-            experience: [{}],
-            education: [{}],
+            experience: [],
+            education: [],
         },
     })
 
-    const { fields: expFields, append: appendExp } = useFieldArray({
+    const {
+        fields: expFields,
+        append: appendExp,
+        replace: replaceExp,
+    } = useFieldArray({
         control,
         name: "experience",
     })
-    const { fields: eduFields, append: appendEdu } = useFieldArray({
+
+    const {
+        fields: eduFields,
+        append: appendEdu,
+        replace: replaceEdu,
+    } = useFieldArray({
         control,
         name: "education",
     })
 
+    useEffect(() => {
+        if (userProfile) {
+            const profileData = userProfile.data[0]
+            setValue("status", profileData.status)
+            setValue("skills", profileData.skills.join(", "))
+            setValue("bio", profileData.bio)
+
+            const formattedExperience =
+                profileData.experience?.map((exp) => ({
+                    ...exp,
+                    from: exp.from
+                        ? new Date(exp.from).toISOString().split("T")[0]
+                        : "",
+                    to: exp.to
+                        ? new Date(exp.to).toISOString().split("T")[0]
+                        : "",
+                })) || []
+
+            const formattedEducation =
+                profileData.education?.map((edu) => ({
+                    ...edu,
+                    from: edu.from
+                        ? new Date(edu.from).toISOString().split("T")[0]
+                        : "",
+                    to: edu.to
+                        ? new Date(edu.to).toISOString().split("T")[0]
+                        : "",
+                })) || []
+
+            replaceExp(formattedExperience)
+            replaceEdu(formattedEducation)
+        }
+    }, [userProfile, setValue, replaceExp, replaceEdu])
+
     const onSubmit = async (data) => {
         try {
             data.skills = data.skills.split(",").map((skill) => skill.trim())
-
-            const response = await axios.post("/api/user/profile", data, {
-                headers: {
-                    Authorization: `Bearer ${userDetails.token}`,
-                },
+            await axios.put("/api/user/profile", data, {
+                headers: { Authorization: `Bearer ${userDetails}` },
             })
-            console.log("Profile created:", response.data)
-
-            toast.success("Profile created", {
+            toast.success("Profile updated successfully!", {
                 position: "top-right",
                 autoClose: 1000,
-                hideProgressBar: false,
-                closeOnClick: true,
-                pauseOnHover: true,
-                draggable: true,
-                theme: "light",
             })
-            navigator("/dashboard")
+            navigate("/dashboard")
         } catch (error) {
-            console.error("Error creating profile:", error)
+            console.error("Error updating profile:", error)
             if (error instanceof AxiosError) {
-                for (const err of Object.entries(error.response.data.error)) {
-                    toast.error(err[1], {
-                        position: "top-right",
-                        autoClose: 5000,
-                        hideProgressBar: false,
-                        closeOnClick: true,
-                        pauseOnHover: true,
-                        draggable: true,
-                        theme: "light",
-                    })
-                }
+                toast.error("Error updating profile. Please try again.", {
+                    position: "top-right",
+                    autoClose: 5000,
+                })
             }
         }
     }
 
+    if (isLoading) return <p>Loading profile...</p>
+    if (error) return <p>Error loading profile.</p>
+
     return (
         <section className="container">
-            <h1 className="large text-primary">Create Your Profile</h1>
+            <h1 className="large text-primary">Update Your Profile</h1>
             <p className="lead">
-                <i className="fas fa-user"></i> Let's get some information to
-                make your profile stand out
+                <i className="fas fa-user"></i> Update your profile details
             </p>
             <small>* = required field</small>
             <form className="form" onSubmit={handleSubmit(onSubmit)}>
@@ -103,16 +136,18 @@ const CreateProfile = () => {
                         <span className="error">Status is required</span>
                     )}
                 </div>
+
                 <div className="form-group">
                     <input
                         type="text"
-                        placeholder="* Skills"
+                        placeholder="* Skills (comma separated)"
                         {...register("skills", { required: true })}
                     />
                     {errors.skills && (
                         <span className="error">Skills are required</span>
                     )}
                 </div>
+
                 <div className="form-group">
                     <textarea
                         placeholder="A short bio of yourself"
@@ -123,8 +158,9 @@ const CreateProfile = () => {
                 <h2>Experience</h2>
                 {expFields.map((item, index) => {
                     const isCurrent = watch(`experience.${index}.current`)
+
                     return (
-                        <div className="form-group" key={index}>
+                        <div className="form-group" key={item.id}>
                             <input
                                 type="text"
                                 placeholder="Title"
@@ -141,16 +177,14 @@ const CreateProfile = () => {
                             />
                             <input
                                 type="date"
-                                placeholder="From"
                                 {...register(`experience.${index}.from`, {
                                     required: true,
                                 })}
                             />
                             <input
                                 type="date"
-                                placeholder="To"
                                 {...register(`experience.${index}.to`)}
-                                disabled={isCurrent}
+                                disabled={isCurrent} // Disable if currently working is checked
                             />
                             <label>
                                 <input
@@ -168,9 +202,12 @@ const CreateProfile = () => {
 
                 <h2>Education</h2>
                 {eduFields.map((item, index) => {
-                    const isCurrent = watch(`education.${index}.current`)
+                    const isCurrentlyStudying = watch(
+                        `education.${index}.current`
+                    )
+
                     return (
-                        <div className="form-group" key={index}>
+                        <div className="form-group" key={item.id}>
                             <input
                                 type="text"
                                 placeholder="School"
@@ -190,21 +227,21 @@ const CreateProfile = () => {
                                 placeholder="Field of Study"
                                 {...register(
                                     `education.${index}.fieldofstudy`,
-                                    { required: true }
+                                    {
+                                        required: true,
+                                    }
                                 )}
                             />
                             <input
                                 type="date"
-                                placeholder="From"
                                 {...register(`education.${index}.from`, {
                                     required: true,
                                 })}
                             />
                             <input
                                 type="date"
-                                placeholder="To"
                                 {...register(`education.${index}.to`)}
-                                disabled={isCurrent}
+                                disabled={isCurrentlyStudying} // Disable if currently studying is checked
                             />
                             <label>
                                 <input
@@ -219,10 +256,15 @@ const CreateProfile = () => {
                 <button type="button" onClick={() => appendEdu({})}>
                     Add Education
                 </button>
-                <input type="submit" className="btn btn-primary my-1" />
+                <br />
+                <input
+                    type="submit"
+                    className="btn btn-primary my-1"
+                    value="Update Profile"
+                />
             </form>
         </section>
     )
 }
 
-export default CreateProfile
+export default UpdateProfile

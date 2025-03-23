@@ -44,10 +44,8 @@ const Login = () => {
                 pauseOnHover: true,
                 draggable: true,
                 theme: "light",
-                onClose: () => {
-                    navigator("/dashboard")
-                },
             })
+            navigator("/dashboard")
         } catch (error) {
             if (error instanceof AxiosError) {
                 return toast.error(error.response.data.error, {

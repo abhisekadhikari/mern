@@ -22,9 +22,10 @@ const Dashboard = () => {
 
     if (isLoading) return <p>Loading...</p>
     if (error) return <p>Error: {error}</p>
-    if (!userProfile?.data?.length)
-        // return <p>No profile found. Please create one.</p>
-        return navigator("/create-profile")
+    console.log(userProfile)
+
+    if (!userProfile?.data?.length) return navigator("/create-profile")
+    // return <p>No profile found. Please create one.</p>
 
     const profile = userProfile.data[0] // Extract first profile object
     const user = profile.user?.[0]
@@ -65,6 +66,38 @@ const Dashboard = () => {
         }
     }
 
+    const handleDeleteEducation = async (id) => {
+        try {
+            await axios.delete(`/api/user/profile/education/${id}`, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            })
+
+            toast.success("Education deleted", {
+                position: "top-right",
+                autoClose: 3000,
+                hideProgressBar: false,
+                closeOnClick: true,
+                pauseOnHover: true,
+                draggable: true,
+                theme: "light",
+            })
+
+            dispatch(fetchUserProfile())
+        } catch (error) {
+            toast.error(error.message, {
+                position: "top-right",
+                autoClose: 3000,
+                hideProgressBar: false,
+                closeOnClick: true,
+                pauseOnHover: true,
+                draggable: true,
+                theme: "light",
+            })
+        }
+    }
+
     return (
         <section className="container">
             <h1 className="large text-primary">Dashboard</h1>
@@ -72,18 +105,18 @@ const Dashboard = () => {
                 <i className="fas fa-user"></i> Welcome {user?.name}
             </p>
             <div className="dash-buttons">
-                <Link to="/edit-profile" className="btn btn-light">
+                <Link to="/update-profile" className="btn btn-light">
                     <i className="fas fa-user-circle text-primary"></i> Edit
                     Profile
                 </Link>
-                <Link to="/add-experience" className="btn btn-light">
+                <Link to="/update-profile" className="btn btn-light">
                     <i className="fab fa-black-tie text-primary"></i> Add
                     Experience
                 </Link>
-                {/* <Link to="/add-education" className="btn btn-light">
+                <Link to="/update-profile" className="btn btn-light">
                     <i className="fas fa-graduation-cap text-primary"></i> Add
                     Education
-                </Link> */}
+                </Link>
             </div>
 
             {/* Skills Section */}
@@ -157,7 +190,12 @@ const Dashboard = () => {
                                         : moment(edu.to).format("YYYY-MM-DD")}
                                 </td>
                                 <td>
-                                    <button className="btn btn-danger">
+                                    <button
+                                        className="btn btn-danger"
+                                        onClick={() =>
+                                            handleDeleteEducation(edu._id)
+                                        }
+                                    >
                                         Delete
                                     </button>
                                 </td>

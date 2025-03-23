@@ -114,7 +114,7 @@ const Post = () => {
                                         src="https://www.gravatar.com/avatar/?d=mp"
                                         alt=""
                                     />
-                                    <h4>John Doe</h4>
+                                    {/* <h4>John Doe</h4> */}
                                 </Link>
                             </div>
                             <div>

@@ -50,9 +50,9 @@ const profileValidationSchema = {
         },
         "experience.*.to": {
             optional: true,
-            isISO8601: {
+            /* isISO8601: {
                 errorMessage: "End date must be a valid date",
-            },
+            }, */
         },
         "experience.*.current": {
             optional: true,
@@ -90,9 +90,9 @@ const profileValidationSchema = {
         },
         "education.*.to": {
             optional: true,
-            isISO8601: {
+            /* isISO8601: {
                 errorMessage: "End date must be a valid date",
-            },
+            }, */
         },
         "education.*.current": {
             optional: true,

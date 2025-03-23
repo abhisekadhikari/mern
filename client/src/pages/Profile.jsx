@@ -1,14 +1,17 @@
 import axios from "axios"
 import React, { useEffect, useState } from "react"
 import { useSelector } from "react-redux"
-import { Link, useSearchParams } from "react-router-dom"
+import { Link, useSearchParams, useNavigate } from "react-router-dom"
 
 const Profile = () => {
     const [searchParams] = useSearchParams()
+    const navigator = useNavigate()
     const { token } = useSelector((state) => state.auth)
     const { userProfile, isLoading, error } = useSelector(
         (state) => state.profile
     )
+
+    if (userProfile === null) navigator("/create-profile")
 
     const [otherUserProfile, setOtherUserProfile] = useState(null)
     const [loadingOtherProfile, setLoadingOtherProfile] = useState(false)

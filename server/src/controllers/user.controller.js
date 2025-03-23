@@ -136,9 +136,6 @@ const createUserProfile = asyncErrorHandler(async (req, res) => {
 
 const getUserProfile = asyncErrorHandler(async (req, res) => {
     try {
-        console.log(req.query)
-        console.log(req.user._id)
-
         // Check if a valid user_id is provided; otherwise, use the logged-in user's ID
         const user_id = mongoose.isValidObjectId(req.query.user_id)
             ? new mongoose.Types.ObjectId(req.query.user_id)
@@ -160,13 +157,6 @@ const getUserProfile = asyncErrorHandler(async (req, res) => {
                 $unwind: "$user", // If you expect a single user, otherwise remove this
             },
         ])
-
-        if (!userProfile.length) {
-            return res.status(404).json({
-                success: false,
-                message: "User profile not found",
-            })
-        }
 
         return res.status(200).json({
             success: true,
@@ -218,6 +208,40 @@ const getUsersProfile = asyncErrorHandler(async (req, res) => {
         success: true,
         message: "Users profile retrieved successfully",
         data: usersProfile,
+    })
+})
+
+/**
+ * @route   PUT /api/profile
+ * @desc    Get user profile along with user details
+ * @access  Private
+ */
+
+const updateUserProfile = asyncErrorHandler(async (req, res) => {
+    const error = validationResult(req).formatWith(({ msg }) => msg)
+
+    if (!error.isEmpty())
+        throw new AppError(
+            400,
+            "Validation failed. Please fix the errors.",
+            error.mapped()
+        )
+
+    const data = matchedData(req)
+
+    const updatedProfile = await Profile.findOneAndUpdate(
+        {
+            user_id: new mongoose.Types.ObjectId(req.user._id),
+        },
+        {
+            ...data,
+        }
+    )
+
+    res.status(200).json({
+        message: "user profile updated successfully",
+        success: true,
+        data: updatedProfile,
     })
 })
 
@@ -281,12 +305,44 @@ const removeUserExperience = asyncErrorHandler(async (req, res) => {
     })
 })
 
+/**
+ * @route   DELETE /api/profile/experience/:exp_id
+ * @desc    Remove an experience entry from user profile
+ * @access  Private
+ */
+const removeUserEducation = asyncErrorHandler(async (req, res) => {
+    const { edu_id } = req.params // Get experience ID from request params
+
+    // Find profile by user ID
+    const profile = await Profile.findOne({ user_id: req.user._id })
+
+    if (!profile) {
+        throw new AppError(404, "Profile not found.")
+    }
+
+    // Filter out the experience with the given edu_id
+    profile.education = profile.education.filter(
+        (edu) => edu._id.toString() !== edu_id
+    )
+
+    // Save the updated profile
+    await profile.save()
+
+    res.json({
+        success: true,
+        message: "Education removed successfully.",
+        data: profile,
+    })
+})
+
 module.exports = {
     signupUser,
     loginUser,
     getUserProfile,
     createUserProfile,
     getUsersProfile,
+    updateUserProfile,
     updateUserExperience,
     removeUserExperience,
+    removeUserEducation,
 }

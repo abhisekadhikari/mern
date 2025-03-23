@@ -4,15 +4,17 @@ import { useEffect } from "react"
 import { fetchUserProfile } from "../../features/profileSlice"
 
 const Nav = () => {
+    const navigator = useNavigate()
+
     const { isAuthenticated } = useSelector((state) => state.auth)
 
     const dispatch = useDispatch()
     const { userProfile, isLoading, error } = useSelector(
         (state) => state.profile
     )
-    const { token } = useSelector((state) => state.auth)
+    // const { token } = useSelector((state) => state.auth)
 
-    console.log(token)
+    console.log(userProfile)
 
     useEffect(() => {
         dispatch(fetchUserProfile())
@@ -21,6 +23,8 @@ const Nav = () => {
     useEffect(() => {
         dispatch(fetchUserProfile())
     }, [dispatch])
+
+    // if (!userProfile?.data?.length) return navigator("/create-profile")
 
     return (
         <nav className="navbar bg-dark">
@@ -41,11 +45,22 @@ const Nav = () => {
                         <li>
                             <Link to="/posts">Posts</Link>
                         </li>
-                        {/* <li>
-                            <Link to="/post">Posts</Link>
-                        </li> */}
                         <li>
-                            <Link to="/logout">Logout</Link>
+                            <Link to="/profiles">Community</Link>
+                        </li>
+                        <li>
+                            <button
+                                style={{
+                                    border: "none",
+                                    background: "transparent",
+                                }}
+                                onClick={() => {
+                                    localStorage.removeItem("authState")
+                                    navigator("/login")
+                                }}
+                            >
+                                <Link to="/logout">Logout</Link>
+                            </button>
                         </li>
                     </>
                 ) : (
